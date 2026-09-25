@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIL Aktobe | 9Ə Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .bil-navy { background-color: #0f2b48; }
+        .bil-navy-text { color: #0f2b48; }
+        .bil-gold { background-color: #f59e0b; }
+        .bil-gold-text { color: #f59e0b; }
+        .bil-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease-in-out;
+        }
+        .bil-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 10px 15px -3px rgba(15, 43, 72, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bil-navy text-white sticky top-0 z-40 shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bil-gold flex items-center justify-center font-black text-slate-900 text-xl shadow-inner">
+                    9Ə
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-none tracking-tight">BIL Aktobe</h1>
+                    <p class="text-xs text-slate-300 font-medium mt-0.5" id="headerSub">9Ə Сынып Порталы</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <!-- Subgroup Selector -->
+                <select id="groupSelect" onchange="renderSchedule()" class="bg-slate-800/80 text-xs text-white border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400">
+                    <option value="all">Барлық топтар / Все группы</option>
+                    <option value="1">1-топ / Группа 1</option>
+                    <option value="2">2-топ / Группа 2</option>
+                </select>
+
+                <!-- Language Toggle -->
+                <button onclick="toggleLang()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
+                    <span id="langBtnText">РУС</span>
+                </button>
+
+                <!-- Teacher Login Button -->
+                <button onclick="openModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center space-x-1.5 shadow">
+                    <i class="fa-solid fa-lock text-xs"></i>
+                    <span id="teacherBtnText">Мұғалім</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+        
+        <!-- Day Navigation Tabs -->
+        <div class="flex space-x-1 overflow-x-auto pb-3 mb-6 scrollbar-none" id="dayTabs">
+            <!-- Rendered by JS -->
+        </div>
+
+        <!-- Schedule Container -->
+        <div class="space-y-3" id="scheduleList">
+            <!-- Rendered by JS -->
+        </div>
+
+        <!-- Homework Section -->
+        <section class="mt-10">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-book-bookmark text-amber-500"></i>
+                    <span id="hwTitle">Үй тапсырмалары</span>
+                </h2>
+                <span id="teacherStatus" class="text-xs bg-slate-200 text-slate-700 font-semibold px-2.5 py-1 rounded-full">
+                    Оқушы режимі / Режим ученика
+                </span>
+            </div>
+
+            <!-- Homework Add Form (Teacher Only) -->
+            <div id="hwForm" class="hidden mb-6 bg-amber-50/50 border border-amber-200 p-4 rounded-xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                    <input type="text" id="hwSubject" placeholder="Пән / Предмет" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                    <input type="text" id="hwTask" placeholder="Тапсырма / Задание" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                    <input type="text" id="hwDeadline" placeholder="Мерзімі / Дедлайн" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                </div>
+                <button onclick="addHomework()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-all">
+                    Қосу / Добавить
+                </button>
+            </div>
+
+            <!-- Homework List -->
+            <div id="hwList" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Rendered by JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Teacher Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-slate-900 text-base" id="modalTitle">Мұғалім жүйесіне кіру</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4" id="modalDesc">Үй тапсырмасын басқару үшін құпия сөзді енгізіңіз.</p>
+            
+            <input type="password" id="passInput" autocomplete="off" value="" placeholder="••••" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-center text-lg font-bold tracking-widest text-slate-800 mb-4 focus:outline-none focus:border-amber-500">
+            
+            <div id="authError" class="hidden text-red-500 text-xs font-semibold text-center mb-3">
+                Қате құпия сөз! / Неверный пароль!
+            </div>
+
+            <button onclick="checkPass()" class="w-full bil-navy text-white text-sm font-bold py-2.5 rounded-xl hover:bg-slate-800 transition-all shadow-md">
+                Кіру / Войти
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Language State
+        let currentLang = 'kk'; // 'kk' or 'ru'
+        let currentDay = 'Mo';
+        let isTeacher = false;
+
+        const translations = {
+            kk: {
+                sub: '9Ə Сынып Порталы',
+                teacherBtn: 'Мұғалім',
+                hwTitle: 'Үй тапсырмалары',
+                studentMode: 'Оқушы режимі',
+                teacherMode: 'Мұғалім режимі',
+                modalTitle: 'Мұғалім жүйесіне кіру',
+                modalDesc: 'Үй тапсырмасын басқару үшін құпия сөзді енгізіңіз.',
+                lunch: 'Түскі ас (Обед)',
+                emptyHw: 'Үй тапсырмалары жоқ.'
+            },
+            ru: {
+                sub: 'Портал 9Ə Класса',
+                teacherBtn: 'Учитель',
+                hwTitle: 'Домашние задания',
+                studentMode: 'Режим ученика',
+                teacherMode: 'Режим учителя',
+                modalTitle: 'Вход для учителей',
+                modalDesc: 'Введите пароль для управления домашними заданиями.',
+                lunch: 'Обеденный перерыв',
+                emptyHw: 'Домашних заданий нет.'
+            }
+        };
+
+        const days = [
+            { id: 'Mo', kk: 'Дүйсенбі', ru: 'Понедельник' },
+            { id: 'Tu', kk: 'Сейсенбі', ru: 'Вторник' },
+            { id: 'We', kk: 'Сәрсенбі', ru: 'Среда' },
+            { id: 'Th', kk: 'Бейсенбі', ru: 'Четверг' },
+            { id: 'Fr', kk: 'Жұма', ru: 'Пятница' }
+        ];
+
+        // Schedule Data matching image 19.09.2026 exactly
+        const schedule = {
+            Mo: [
+                { num: 1, time: '08:30 - 09:15', name: 'Cc', room: '324', teacher: 'Назира / Нағашбек ағай' },
+                { num: 2, time: '09:25 - 10:10', name: 'Ағ. тілі', split: true, g1: { room: 'Chemistry 210', teacher: 'Айгерім' }, g2: { room: 'Chemistry 212', teacher: 'Гүлзира апай' } },
+                { num: 3, time: '10:30 - 11:15', name: 'Ағ. тілі', split: true, g1: { room: 'Chemistry 210', teacher: 'Айгерім' }, g2: { room: 'Chemistry 212', teacher: 'Гүлзира апай' } },
+                { num: 4, time: '11:25 - 12:10', name: 'Алгебра', split: true, g1: { room: 'Intellectum 214', teacher: 'Тынышбек ағай' }, g2: { room: 'Mathematics 220', teacher: 'Аблайхан ағай' } },
+                { num: 5, time: '12:15 - 13:00', name: 'ДШ', room: 'Gym', teacher: 'Еркебұлан H' },
+                { isLunch: true, time: '13:00 - 13:45' },
+                { num: 6, time: '13:55 - 14:40', name: 'ДШ', room: 'Gym', teacher: 'Еркебұлан H' },
+                { num: 7, time: '14:50 - 15:35', name: 'Б / Ос', split: true, g1: { room: '', teacher: 'Б - Нурила' }, g2: { room: 'Chemistry 210', teacher: 'Ос - Назира' } },
+                { num: 8, time: '15:45 - 16:30', name: 'ЗЖт/Ж / Қ', room: '', teacher: 'Кенжегүл / Алтынгүл' }
+            ],
+            Tu: [
+                { num: 1, time: '08:30 - 09:15', name: 'Химия', room: 'Chemistry 210', teacher: 'Ануарбек ағай' },
+                { num: 2, time: '09:25 - 10:10', name: 'Химия', room: 'Chemistry 210', teacher: 'Ануарбек ағай' },
+                { num: 3, time: '10:30 - 11:15', name: 'Ағ. тілі', split: true, g1: { room: 'Chemistry 210', teacher: 'Айгерім' }, g2: { room: 'Chemistry 212', teacher: 'Гүлзира апай' } },
+                { num: 4, time: '11:25 - 12:10', name: 'Ағ. тілі', split: true, g1: { room: 'Chemistry 210', teacher: 'Айгерім' }, g2: { room: 'Chemistry 212', teacher: 'Гүлзира апай' } },
+                { num: 5, time: '12:15 - 13:00', name: 'Қ. тілі', room: '', teacher: 'Назира' },
+                { isLunch: true, time: '13:00 - 13:45' },
+                { num: 6, time: '13:55 - 14:40', name: 'Қ. тілі', room: '', teacher: 'Назира' },
+                { num: 7, time: '14:50 - 15:35', name: 'География', room: '', teacher: 'Арайлым' },
+                { num: 8, time: '15:45 - 16:30', name: 'Prog', room: '', teacher: 'Есенали ағай' }
+            ],
+            We: [
+                { num: 1, time: '08:30 - 09:15', name: 'Қ. Тарихы', room: '', teacher: 'Айбол' },
+                { num: 2, time: '09:25 - 10:10', name: 'О. тілі', room: '', teacher: 'Зинаида' },
+                { num: 3, time: '10:30 - 11:15', name: 'Құқық', room: '', teacher: 'Алтынгүл' },
+                { num: 4, time: '11:25 - 12:10', name: 'Биология', room: 'Biology 208', teacher: 'Рүстем ағай' },
+                { num: 5, time: '12:15 - 13:00', name: 'Биология', room: 'Biology 208', teacher: 'Рүстем ағай' },
+                { isLunch: true, time: '13:00 - 13:45' },
+                { num: 6, time: '13:55 - 14:40', name: 'Қ. Әдебиеті', room: '', teacher: 'Назира' },
+                { num: 7, time: '14:50 - 15:35', name: 'Қ. Әдебиеті', room: '', teacher: 'Назира' },
+                { num: 8, time: '15:45 - 16:30', name: 'Т. Тілі', room: '', teacher: 'Нұрбике апай' }
+            ],
+            Th: [
+                { num: 1, time: '08:30 - 09:15', name: 'Физика', split: true, g1: { room: 'Physics 206', teacher: 'Сержан ағай' }, g2: { room: '', teacher: 'Ерасыл ағай' } },
+                { num: 2, time: '09:25 - 10:10', name: 'Физика', split: true, g1: { room: 'Physics 206', teacher: 'Сержан ағай' }, g2: { room: '', teacher: 'Ерасыл ағай' } },
+                { num: 3, time: '10:30 - 11:15', name: 'Ағ. тілі', split: true, g1: { room: 'Chemistry 210', teacher: 'Айгерім' }, g2: { room: 'Chemistry 212', teacher: 'Гүлзира апай' } },
+                { num: 4, time: '11:25 - 12:10', name: 'Ағ. тілі', split: true, g1: { room: 'Chemistry 210', teacher: 'Айгерім' }, g2: { room: 'Chemistry 212', teacher: 'Гүлзира апай' } },
+                { num: 5, time: '12:15 - 13:00', name: 'Еңбек', room: '', teacher: 'Нұрлан' },
+                { isLunch: true, time: '13:00 - 13:45' },
+                { num: 6, time: '13:55 - 14:40', name: 'О. тілі', room: '', teacher: 'Зинаида' },
+                { num: 7, time: '14:50 - 15:35', name: 'О. тілі', room: '', teacher: 'Зинаида' },
+                { num: 8, time: '15:45 - 16:30', name: 'МжШ', room: '', teacher: 'Назира' }
+            ],
+            Fr: [
+                { num: 1, time: '08:30 - 09:15', name: 'Алгебра', split: true, g1: { room: 'Intellectum 214', teacher: 'Тынышбек ағай' }, g2: { room: 'Mathematics 220', teacher: 'Аблайхан ағай' } },
+                { num: 2, time: '09:25 - 10:10', name: 'Алгебра', split: true, g1: { room: 'Intellectum 214', teacher: 'Тынышбек ағай' }, g2: { room: 'Mathematics 220', teacher: 'Аблайхан ағай' } },
+                { num: 3, time: '10:30 - 11:15', name: 'Д. Тарих', room: '', teacher: 'Айбол' },
+                { num: 4, time: '11:25 - 12:10', name: 'ДШ', room: 'Gym', teacher: 'Еркебұлан H' },
+                { num: 5, time: '12:15 - 13:00', name: 'Геометрия', room: 'Mathematics 220', teacher: 'Аблайхан ағай' },
+                { isLunch: true, time: '13:00 - 13:45' },
+                { num: 6, time: '13:55 - 14:40', name: 'Информатика / STEM', split: true, g1: { room: 'Informatics', teacher: 'Нағашбек ағай' }, g2: { room: 'STEM', teacher: 'Есенали ағай' } },
+                { num: 7, time: '14:50 - 15:35', name: 'Т. Тілі', room: '', teacher: 'Нұрбике апай' },
+                { num: 8, time: '15:45 - 16:30', name: 'Т. Тілі', room: '', teacher: 'Нұрбике апай' }
+            ]
+        };
+
+        // Homework State
+        let homeworks = [
+            { id: 1, subject: 'Ағылшын тілі', task: 'Ex 5, p. 42 (Workbook)', deadline: 'Дүйсенбі' },
+            { id: 2, subject: 'Алгебра', task: '№ 124, 125 есептер', deadline: 'Сейсенбі' }
+        ];
+
+        function init() {
+            renderTabs();
+            renderSchedule();
+            renderHomework();
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'kk' ? 'ru' : 'kk';
+            document.getElementById('langBtnText').innerText = currentLang === 'kk' ? 'РУС' : 'ҚАЗ';
+            document.getElementById('headerSub').innerText = translations[currentLang].sub;
+            document.getElementById('teacherBtnText').innerText = translations[currentLang].teacherBtn;
+            document.getElementById('hwTitle').innerText = translations[currentLang].hwTitle;
+            document.getElementById('modalTitle').innerText = translations[currentLang].modalTitle;
+            document.getElementById('modalDesc').innerText = translations[currentLang].modalDesc;
+            updateStatusText();
+            renderTabs();
+            renderSchedule();
+            renderHomework();
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('dayTabs');
+            container.innerHTML = days.map(d => {
+                const isActive = d.id === currentDay;
+                const label = currentLang === 'kk' ? d.kk : d.ru;
+                return `
+                    <button onclick="setDay('${d.id}')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${isActive ? 'bil-navy text-amber-400 shadow' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
+                        ${label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function setDay(dayId) {
+            currentDay = dayId;
+            renderTabs();
+            renderSchedule();
+        }
+
+        function renderSchedule() {
+            const container = document.getElementById('scheduleList');
+            const groupFilter = document.getElementById('groupSelect').value;
+            const items = schedule[currentDay];
+
+            container.innerHTML = items.map(item => {
+                if (item.isLunch) {
+                    return `
+                        <div class="bg-amber-50/80 border border-amber-200/70 rounded-xl px-4 py-2.5 flex items-center justify-between text-amber-900 my-1">
+                            <div class="flex items-center space-x-2 text-xs font-bold">
+                                <i class="fa-solid fa-utensils text-amber-600"></i>
+                                <span>${translations[currentLang].lunch}</span>
+                            </div>
+                            <span class="text-xs font-semibold text-amber-700/80">${item.time}</span>
+                        </div>
+                    `;
+                }
+
+                if (item.split) {
+                    const showG1 = groupFilter === 'all' || groupFilter === '1';
+                    const showG2 = groupFilter === 'all' || groupFilter === '2';
+
+                    return `
+                        <div class="bil-card rounded-xl p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+                                    ${item.num}
+                                </div>
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                                        <span>${item.name}</span>
+                                        <span class="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-md">2 топқа бөлінеді</span>
+                                    </div>
+                                    <div class="text-xs text-slate-500 font-medium">${item.time}</div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 md:mt-0">
+                                ${showG1 ? `
+                                    <div class="bg-slate-50 border border-slate-200/80 rounded-lg p-2 text-xs">
+                                        <div class="font-bold text-amber-700 mb-0.5">1-топ</div>
+                                        <div class="font-semibold text-slate-800">${item.g1.teacher}</div>${item.g1.room ? `<div class="text-[11px] text-slate-500"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${item.g1.room}</div>` : ''}
+                                    </div>
+                                ` : ''}
+
+                                ${showG2 ? `
+                                    <div class="bg-slate-50 border border-slate-200/80 rounded-lg p-2 text-xs">
+                                        <div class="font-bold text-blue-700 mb-0.5">2-топ</div>
+                                        <div class="font-semibold text-slate-800">${item.g2.teacher}</div>${item.g2.room ? `<div class="text-[11px] text-slate-500"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${item.g2.room}</div>` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bil-card rounded-xl p-3.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+                                ${item.num}
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-900 text-sm">${item.name}</div>
+                                <div class="text-xs text-slate-500 font-medium">${item.time}</div>
+                            </div>
+                        </div>
+                        <div class="text-right text-xs">
+                            <div class="font-semibold text-slate-800">${item.teacher}</div>
+                            ${item.room ? `<div class="text-[11px] text-slate-500"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${item.room}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderHomework() {
+            const container = document.getElementById('hwList');
+            if (homeworks.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center text-xs text-slate-400 py-6">${translations[currentLang].emptyHw}</div>`;
+                return;
+            }
+
+            container.innerHTML = homeworks.map(hw => `
+                <div class="bil-card rounded-xl p-3.5 flex items-start justify-between">
+                    <div>
+                        <div class="font-bold text-slate-900 text-xs text-amber-600 mb-0.5">${hw.subject}</div>
+                        <div class="text-xs text-slate-700 font-medium mb-1">${hw.task}</div>
+                        <div class="text-[10px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${hw.deadline}</div>
+                    </div>
+                    ${isTeacher ? `
+                        <button onclick="deleteHw(${hw.id})" class="text-slate-300 hover:text-red-500 text-xs p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function openModal() {
+            document.getElementById('passInput').value = '';
+            document.getElementById('authError').classList.add('hidden');
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function checkPass() {
+            const pass = document.getElementById('passInput').value;
+            if (pass === '5678') {
+                isTeacher = true;
+                closeModal();
+                updateStatusText();
+                document.getElementById('hwForm').classList.remove('hidden');
+                renderHomework();
+            } else {
+                document.getElementById('authError').classList.remove('hidden');
+            }
+        }
+
+        function updateStatusText() {
+            const el = document.getElementById('teacherStatus');
+            if (isTeacher) {
+                el.innerText = translations[currentLang].teacherMode;
+                el.className = 'text-xs bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded-full';
+            } else {
+                el.innerText = translations[currentLang].studentMode;
+                el.className = 'text-xs bg-slate-200 text-slate-700 font-semibold px-2.5 py-1 rounded-full';
+            }
+        }
+
+        function addHomework() {
+            const subject = document.getElementById('hwSubject').value.trim();
+            const task = document.getElementById('hwTask').value.trim();
+            const deadline = document.getElementById('hwDeadline').value.trim();
+
+            if (!subject || !task) return;
+
+            homeworks.push({ id: Date.now(), subject, task, deadline: deadline || 'Анықталмаған' });
+            document.getElementById('hwSubject').value = '';
+            document.getElementById('hwTask').value = '';
+            document.getElementById('hwDeadline').value = '';
+            renderHomework();
+        }
+
+        function deleteHw(id) {
+            homeworks = homeworks.filter(h => h.id !== id);
+            renderHomework();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
